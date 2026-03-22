@@ -45,11 +45,7 @@ def main():
         os.remove(out_jsonl)
 
     bench: List[Dict[str, Any]] = load_json_any(args.input_path)
-    if args.shuffle:
-        if args.seed is not None:
-            random.Random(args.seed).shuffle(bench)
-        else:
-            random.shuffle(bench)
+
     if args.limit and args.limit > 0:
         bench = bench[:args.limit]
 
@@ -94,23 +90,17 @@ def main():
 
         append_jsonl(out_jsonl, {
             "id": item.get("id"),
-            "case_name": item.get("case_name"),
             "gold": gold,
             "pred": pred,
             "is_correct": ok,
             "raw": raw,
             "status": "ok" if call_meta["ok"] else "error",
-            "error": call_meta["error"],
-            "attempts": call_meta["attempts"],
+            "error": call_meta.get("error"),
             "used_reasoning": call_meta.get("used_reasoning"),
-            "reasoning_fallback": call_meta.get("fallback_without_reasoning"),
         })
 
         acc = correct / total if total else 0.0
         pbar.set_postfix(acc=f"{acc:.3f}", inv=f"{invalid/total:.2f}")
-
-        if args.sleep:
-            time.sleep(args.sleep)
 
     summary = {
         "model": args.model,
